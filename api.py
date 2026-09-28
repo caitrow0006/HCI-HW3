@@ -46,29 +46,36 @@ def add_question(req: QuestionRequest):
         "a": req.answer
     })
 
-# TODO: Add a new route that can be used to delete a question/answer from the dataset.
 @app.delete("/delete/{id}")
 def delete_question(id: int):
+    #search questions to see if id matches one that exits
     for question in questions:
+        
         if question.get("id") == id:
+            #if id matches on that exists, remove that question and...
             questions.remove(question)
-            #reset id numbers
+            #...reset id numbers so everything works later with toggling
             i = 0
             for question in questions:
                 question["id"] = i
                 i = i + 1
+            #return so we dont raise exception
             return
+    #question was not in list, raise exception
     raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Question with ID {id} not found")
     return
 
-# TODO: Add a new route that can be used to update a question/answer within the dataset.
 @app.put("/update/{id}")
 def update_question(id: int, req: QuestionRequest):
+    #find question in list if exists
     for question in questions:
         if question.get("id") == id:
+            #assign new question and answer pair
             question["q"] = req.question
             question["a"] = req.answer
+            #return so we dont riase exception
             return
+    #question was not in list, raise 404
     raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Question with ID {id} not found")
     return
 

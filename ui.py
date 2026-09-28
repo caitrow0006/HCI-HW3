@@ -82,19 +82,34 @@ def api_put(path, id, data):
 
 # TODO: Add edit and delete buttons dynamically to each question card. 
 def render_question(question):
+    #create UI card
     with ui.card() as card:
+        #on clicj toggle to show/hide answer
         card.on("click", lambda: toggle_answer(question["id"]))
         ui.label(question["q"])
         ui.label(question["a"]).classes("text-s text-green font-bold").bind_visibility_from(question["state"], "show_answer")
+        
+        #create delete button, on click call delete_question made earlier
         delete_question_btn = ui.button(text="Delete", on_click=lambda: delete_question(id=question["id"])).classes("bg-negative text-white font-bold py-2 px-4 rounded")
+        
+        #dialog first so that edit button knows it exists **?**
         with ui.dialog() as edit_dialog, ui.card():
             ui.label('Edit Question')
+            
+            #value field is prefill text
             question_edit = ui.textarea(label='Question:', value=question["q"])
             answer_edit = ui.textarea(label='Answer:', value=question["a"])
+            
+            #put buttons in row
             with ui.row():
+                #when saving, call put but also close dialog
                 ui.button('Save', on_click=lambda: (update_question( question["id"], question=question_edit.value, answer=answer_edit.value), edit_dialog.close))
-                #^^https://github.com/zauberzeug/nicegui/discussions/1220
+                #https://github.com/zauberzeug/nicegui/discussions/1220
+                
+                #if cancel,, dont put, just close dialogue
                 ui.button('Cancel', on_click=edit_dialog.close)
+                
+        #make update question button
         update_question_btn = ui.button(text="Edit", on_click=edit_dialog.open).classes("bg-primary text-white font-bold py-2 px-4 rounded")
 
 def toggle_answer(i):
@@ -103,11 +118,13 @@ def toggle_answer(i):
 def add_new_question(question, answer):
     api_post("/add", {"question": question, "answer": answer})
     render_page()
-    
+
+#helper to delete question, remeber to render page!!
 def delete_question(id):
     api_delete(f"/delete", id)
     render_page()
     
+#helper to update question, remeber to render page!!
 def update_question(id, question, answer):
     api_put(f"/update", id, {"question": question, "answer": answer})
     render_page()
@@ -136,3 +153,13 @@ def render_page():
 
 init_page()
 ui.run(port=8084, title="HCI Review Application")
+
+#list of materials referenced:
+#https://www.w3schools.com/python/python_arrays.asp
+#https://tailwind.build/classes
+#https://daisyui.com/components/button/
+#https://htmlcolorcodes.com/color-picker/
+#https://www.geeksforgeeks.org/python/put-method-python-requests/
+#https://nicegui.io/documentation/textarea
+#https://github.com/zauberzeug/nicegui/discussions/1220
+#https://www.siteground.com/kb/422-error-code
