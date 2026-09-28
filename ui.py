@@ -1,6 +1,16 @@
 from nicegui import ui
 import requests
 
+ui.colors(
+      primary='#27B0F5',
+      secondary='#2768F5',
+      accent='#7847F5',
+      positive='#a2e0b0',
+      negative='#CD0404',
+      info='#47E6F5',
+      warning='#F2C037'
+)
+
 API_URL = "http://localhost:8005"
 
 questions = []
@@ -38,7 +48,18 @@ def api_post(path, data):
 # The request method should use the string f"{API_URL}{path}/{id}" to access the correct path,
 # where id refers to the id number of the question to be deleted. 
 def api_delete(path, id):
-    pass
+    try:
+        # Attempt to send DELETE request to API with data payload
+        response = requests.delete(f"{API_URL}{path}/{id}", timeout=5)
+        # If we get an error code back, raise an exception
+        response.raise_for_status()
+        # Otherwise, DELETE was successful so return True
+        return True
+    except requests.RequestException as e:
+        # DELETE request was unsuccessful
+        # Send an alert with error details to the UI and return False
+        ui.notify(f"Could not reach API: {e}", type="negative")
+        return False
 
 # TODO: Create api_put function that attempts to send a PUT request to the API.
 # The request method should use the string f"{API_URL}{path}/{id}" to access the correct path,
@@ -46,7 +67,18 @@ def api_delete(path, id):
 # to this function must be sent with the request so that the API knows the updated values to add 
 # to the dataset (similar to how data is sent in api_post).
 def api_put(path, id, data):
-    pass
+    try:
+        # Attempt to send PUT request to API with data payload
+        response = requests.put(f"{API_URL}{path}/{id}", json=data, timeout=5)
+        # If we get an error code back, raise an exception
+        response.raise_for_status()
+        # Otherwise, PUT was successful so return True
+        return True
+    except requests.RequestException as e:
+        # PUT request was unsuccessful
+        # Send an alert with error details to the UI and return False
+        ui.notify(f"Could not reach API: {e}", type="negative")
+        return False
 
 # TODO: Add edit and delete buttons dynamically to each question card. 
 def render_question(question):
@@ -54,12 +86,30 @@ def render_question(question):
         card.on("click", lambda: toggle_answer(question["id"]))
         ui.label(question["q"])
         ui.label(question["a"]).classes("text-s text-green font-bold").bind_visibility_from(question["state"], "show_answer")
+        delete_question_btn = ui.button(text="Delete", on_click=lambda: delete_question(id=question["id"])).classes("bg-negative text-white font-bold py-2 px-4 rounded")
+        with ui.dialog() as edit_dialog, ui.card():
+            ui.label('Edit Question')
+            question_edit = ui.textarea(label='Question:', value=question["q"])
+            answer_edit = ui.textarea(label='Answer:', value=question["a"])
+            with ui.row():
+                ui.button('Save', on_click=lambda: (update_question( question["id"], question=question_edit.value, answer=answer_edit.value), edit_dialog.close))
+                #^^https://github.com/zauberzeug/nicegui/discussions/1220
+                ui.button('Cancel', on_click=edit_dialog.close)
+        update_question_btn = ui.button(text="Edit", on_click=edit_dialog.open).classes("bg-primary text-white font-bold py-2 px-4 rounded")
 
 def toggle_answer(i):
     questions[i]["state"]["show_answer"] = not questions[i]["state"]["show_answer"]
 
 def add_new_question(question, answer):
     api_post("/add", {"question": question, "answer": answer})
+    render_page()
+    
+def delete_question(id):
+    api_delete(f"/delete", id)
+    render_page()
+    
+def update_question(id, question, answer):
+    api_put(f"/update", id, {"question": question, "answer": answer})
     render_page()
 
 def render_text_inputs():
@@ -68,7 +118,7 @@ def render_text_inputs():
     add_question_btn = ui.button(text="Add question", on_click=lambda: add_new_question(
         question=new_question_input.value,
         answer=new_answer_input.value
-    ))
+    )).classes("bg-primary text-white font-bold py-2 px-4 rounded")
 
 def init_page():
     render_page()
