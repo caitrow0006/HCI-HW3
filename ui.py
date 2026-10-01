@@ -5,7 +5,7 @@ ui.colors(
       primary='#27B0F5',
       secondary='#2768F5',
       accent='#7847F5',
-      positive='#a2e0b0',
+      positive='#20FA48',
       negative='#CD0404',
       info='#47E6F5',
       warning='#F2C037'
@@ -15,6 +15,7 @@ API_URL = "http://localhost:8005"
 
 questions = []
 page_body = ui.column()
+page = ui.row()
 
 def api_get(path):
     try:
@@ -111,7 +112,7 @@ def render_question(question):
         
             button_row.classes("bg-gray-300 rounded p-3")
             #make update question button
-            update_question_btn = ui.button(text="Edit", on_click=edit_dialog.open).classes("bg-primary text-white font-bold py-2 px-4 rounded")
+            update_question_btn = ui.button(text="Edit", on_click=edit_dialog.open).classes("bg-positive text-white font-bold py-2 px-4 rounded")
             
             #create delete button, on click call delete_question made earlier
             delete_question_btn = ui.button(text="Delete", on_click=lambda: delete_question(id=question["id"])).classes("bg-negative text-white font-bold py-2 px-4 rounded")
@@ -135,12 +136,19 @@ def update_question(id, question, answer):
     render_page()
 
 def render_text_inputs():
-    new_question_input = ui.input(label="New question").props("clearable")
-    new_answer_input = ui.input(label="New answer").props("clearable")
-    add_question_btn = ui.button(text="Add question", on_click=lambda: add_new_question(
-        question=new_question_input.value,
-        answer=new_answer_input.value
-    )).classes("bg-primary text-white font-bold py-2 px-4 rounded")
+
+    with ui.column() as add_col:
+        add_col.classes("bg-secondary rounded w-1/4 p-3")
+        
+        with ui.card() as add_card:
+            add_card.classes("w-full")
+        
+            new_question_input = ui.input(label="New question").props("clearable")
+            new_answer_input = ui.input(label="New answer").props("clearable")
+            add_question_btn = ui.button(text="Add question", on_click=lambda: add_new_question(
+                question=new_question_input.value,
+                answer=new_answer_input.value
+            )).classes("bg-positive text-white font-bold py-2 px-4 rounded")
 
 def init_page():
     render_page()
@@ -149,9 +157,15 @@ def render_page():
     global questions
     questions = api_get("/questions")
     page_body.clear()
-    with page_body:
+    page.clear()
+    
+    with page:
+        #page.clear()
+        page.classes("w-full gap-0")
+        
         with ui.column() as questions_col:
-            questions_col.classes("bg-accent rounded p-3")
+            questions_col.classes("w-3/4 bg-gray-200 rounded p-3")
+    #with page_body:
             for question in questions:
                 question["state"] = {"show_answer": False}
                 render_question(question)
