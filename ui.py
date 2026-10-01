@@ -84,13 +84,11 @@ def api_put(path, id, data):
 def render_question(question):
     #create UI card
     with ui.card() as card:
+        card.classes("w-full")
         #on clicj toggle to show/hide answer
         card.on("click", lambda: toggle_answer(question["id"]))
         ui.label(question["q"])
         ui.label(question["a"]).classes("text-s text-green font-bold").bind_visibility_from(question["state"], "show_answer")
-        
-        #create delete button, on click call delete_question made earlier
-        delete_question_btn = ui.button(text="Delete", on_click=lambda: delete_question(id=question["id"])).classes("bg-negative text-white font-bold py-2 px-4 rounded")
         
         #dialog first so that edit button knows it exists **?**
         with ui.dialog() as edit_dialog, ui.card():
@@ -109,8 +107,15 @@ def render_question(question):
                 #if cancel,, dont put, just close dialogue
                 ui.button('Cancel', on_click=edit_dialog.close)
                 
-        #make update question button
-        update_question_btn = ui.button(text="Edit", on_click=edit_dialog.open).classes("bg-primary text-white font-bold py-2 px-4 rounded")
+        with ui.row() as button_row:
+        
+            button_row.classes("bg-gray-300 rounded p-3")
+            #make update question button
+            update_question_btn = ui.button(text="Edit", on_click=edit_dialog.open).classes("bg-primary text-white font-bold py-2 px-4 rounded")
+            
+            #create delete button, on click call delete_question made earlier
+            delete_question_btn = ui.button(text="Delete", on_click=lambda: delete_question(id=question["id"])).classes("bg-negative text-white font-bold py-2 px-4 rounded")
+                
 
 def toggle_answer(i):
     questions[i]["state"]["show_answer"] = not questions[i]["state"]["show_answer"]
@@ -145,9 +150,11 @@ def render_page():
     questions = api_get("/questions")
     page_body.clear()
     with page_body:
-        for question in questions:
-            question["state"] = {"show_answer": False}
-            render_question(question)
+        with ui.column() as questions_col:
+            questions_col.classes("bg-accent rounded p-3")
+            for question in questions:
+                question["state"] = {"show_answer": False}
+                render_question(question)
         render_text_inputs()
     
 
