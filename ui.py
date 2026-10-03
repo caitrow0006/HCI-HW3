@@ -102,7 +102,7 @@ def render_question(question):
             #put buttons in row
             with ui.row():
                 #when saving, call put but also close dialog
-                ui.button('Save', on_click=lambda: (update_question( question["id"], question=question_edit.value, answer=answer_edit.value), edit_dialog.close))
+                ui.button('Update Question', on_click=lambda: (update_question( question["id"], question=question_edit.value, answer=answer_edit.value), edit_dialog.close))
                 #https://github.com/zauberzeug/nicegui/discussions/1220
                 
                 #if cancel,, dont put, just close dialogue
@@ -138,7 +138,7 @@ def update_question(id, question, answer):
 def render_text_inputs():
 
     with ui.column() as add_col:
-        add_col.classes("bg-secondary rounded w-1/4 p-3")
+        add_col.classes("bg-gray-400 rounded w-1/4 p-3")
         
         with ui.card() as add_card:
             add_card.classes("w-full")
